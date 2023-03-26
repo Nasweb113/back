@@ -1,0 +1,6 @@
+GET http://localhost:3000/api/sauces
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im5laWwuZXNAeWFob28uY29tIiwiaWF0IjoxNjc5MTU4NTY3LCJleHAiOjE2NzkyNDQ5Njd9.Izs5iQnF6NDyaCTqRF1bBO8fILsM9i2z2-NcVJb4vGw
+###########################################
+POST http://localhost:3000/api/auth/signup
+
+{"email": "test@example.com", "password": "password"}

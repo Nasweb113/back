@@ -43,7 +43,7 @@ async function logUser(req, res) {
 }
 function createToken(email) {
   jwtPassword = process.env.JWT_PASSWORD
-  const token = jwt.sign({email: email}, "pelican", {expiresIn: "24hr"}) //expires in, so if stolen it will expire
+  const token = jwt.sign({email: email}, "pelican", {expiresIn: "24h"}) //expires in, so if stolen it will expire
   return token
 }
 module.exports = {createUser, logUser}
