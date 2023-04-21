@@ -5,21 +5,22 @@ console.log(process.env)
 console.log('hello world')
 const express = require("express")
 const app = express()
-//express.js cors middleware and usage instructions
 const cors = require("cors")
 const port = 3000
 const multer = require("multer")
 
 
 const storage = multer.diskStorage({
-  destination: "image/",  
+  destination: "images/",  
   filename: function (req, file, cb) {    
-    cb(null, makeFileName(file))
+    cb(null, makeFileName(req, file))
   }
 })
 
-function makeFileName(file) {
-  return `${Date.now()}-${file.originalname}`
+function makeFileName(req, file) {
+  const fileName = `${Date.now()}-${file.originalname}`.replace(/\s/g, "-")
+  file.fileName = fileName
+  return fileName
 }
 
 const upload = multer({storage: storage})
@@ -33,22 +34,19 @@ const {getSauces, createSauce, authenticateUser} = require("./controllers/sauces
 //middleware
 app.use(cors())
 app.use(express.json())
-//app.use(bodyParser.json())
-//app.use(bodyParser.urlencoded({ extended: true}))
-
-
-//const multer = require("multer")
-//const storage = multer.diskStorage({destination: "images/", filename: makeFilename})
-//const upload = multer({ storage: storage})
 
 //routes
 app.post("/api/auth/signup",createUser) 
 app.post("/api/auth/login",logUser) 
 app.get("/api/sauces", authenticateUser,  getSauces)
-app.post("/api/sauces", authenticateUser,upload.single("image"), createSauce )
+app.post("/api/sauces", authenticateUser, upload.single("image"), createSauce )
 app.get("/", (req, res) => res.send("Hello World"))
 
 
 //listen
 app.listen(port, () => console.log('listening on port: ' + port))
+
+
+
+
 

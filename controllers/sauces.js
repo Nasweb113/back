@@ -6,7 +6,7 @@ const productSchema = new mongoose.Schema({
   manufacturer: String,
   description: String,
   mainPepper: String,
-  imageURL: String,
+  ImageUrl: String,
   heat: Number,
   likes: Number,
   dislikes: Number,
@@ -48,19 +48,13 @@ function getSauces ( req,res) {
 }
 
 function createSauce(req, res) {
-  const {body, file} = req
+  const { body, file } = req
+  console.log({ file })
+  const fileName = file.fileName
+  console.log("filename:" + fileName) //creating image filename, see index.js for fileName creation
   const sauce = JSON.parse(body.sauce)
-  console.log("sauce", sauce)
- const name = sauce.name
- const manufacturer = sauce.manufacturer
- const description = sauce.description
- const mainPepper = sauce.mainPepper
- const heat = sauce.heat
- const userId = sauce.userId
-  console.log({body: req.body.sauce})
-  console.log({ file: req.file}) 
-  const imageUrl = req.file.destination + req.file.filename
-  
+  const { name, manufacturer, description, mainPepper, heat, userId } = sauce
+  console.log(sauce)
   const product = new Product({
     
   userId:userId,
@@ -68,13 +62,14 @@ function createSauce(req, res) {
   manufacturer:manufacturer,
   description:description,
   mainPepper:mainPepper,
-  //imageUrl:imageUrl,
+  ImageUrl:"images/" +fileName,
   heat:heat,
   likes: 0,
   dislikes: 0,
   usersLiked: [],
   usersDisliked: [],
 })
+console.log(product)
 product.save().then((res)=> console.log("product saved", res)).catch(console.error)
 }
 
