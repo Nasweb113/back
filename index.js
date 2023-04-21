@@ -1,39 +1,15 @@
-require('dotenv').config()
-console.log(process.env)
-//const bodyParser = require("body-parser")
-const path = require("path")
-console.log('hello world')
-const express = require("express")
-const app = express()
-const cors = require("cors")
+const {app, express} = require("./server.js")
 const port = 3000
-const multer = require("multer")
+const path = require("path")
 
 
-const storage = multer.diskStorage({
-  destination: "images/",  
-  filename: function (req, file, cb) {    
-    cb(null, makeFileName(req, file))
-  }
-})
-
-function makeFileName(req, file) {
-  const fileName = `${Date.now()}-${file.originalname}`.replace(/\s/g, "-")
-  file.fileName = fileName
-  return fileName
-}
-
-const upload = multer({storage: storage})
 //connection to database
 require("./mongo")
 //controllers
 const {createUser, logUser} = require("./controllers/users")
 const {getSauces, createSauce, authenticateUser} = require("./controllers/sauces")
-
-
 //middleware
-app.use(cors())
-app.use(express.json())
+const {upload} = require("./middleware/multer.js")
 
 //routes
 app.post("/api/auth/signup",createUser) 
