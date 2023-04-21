@@ -1,7 +1,7 @@
 require('dotenv').config()
 console.log(process.env)
 //const bodyParser = require("body-parser")
-//const path = require("path")
+const path = require("path")
 console.log('hello world')
 const express = require("express")
 const app = express()
@@ -44,6 +44,8 @@ app.get("/", (req, res) => res.send("Hello World"))
 
 
 //listen
+
+app.use("/images", express.static(path.join(__dirname, "images")))
 app.listen(port, () => console.log('listening on port: ' + port))
 
 

@@ -6,7 +6,7 @@ const productSchema = new mongoose.Schema({
   manufacturer: String,
   description: String,
   mainPepper: String,
-  ImageUrl: String,
+  imageUrl: String,
   heat: Number,
   likes: Number,
   dislikes: Number,
@@ -36,15 +36,15 @@ function authenticateUser(req, res, next) { //takes 3rd arguement NEXT as it is 
 }
 
 
-//if there is an error BELOW
+
 function getSauces ( req,res) {
   console.log("Token Validated, you are in HOT TAKES!")
+  //product.deleteMany({})
   
   //authenticateUser(req, res)
   //console.log("Token OK", decoded)
   Product.find({}).then(products => res.send(products))
   //res.send({message: [{sauce: "sauce1"}, {sauce: "sauce1"}] })
-
 }
 
 function createSauce(req, res) {
@@ -54,7 +54,12 @@ function createSauce(req, res) {
   console.log("filename:" + fileName) //creating image filename, see index.js for fileName creation
   const sauce = JSON.parse(body.sauce)
   const { name, manufacturer, description, mainPepper, heat, userId } = sauce
-  console.log(sauce)
+console.log(sauce)
+  function makeImageUrl (req, fileName) {
+    return req.protocol + "://" + req.get("host") + "/images/" +fileName
+  }
+
+  
   const product = new Product({
     
   userId:userId,
@@ -62,7 +67,7 @@ function createSauce(req, res) {
   manufacturer:manufacturer,
   description:description,
   mainPepper:mainPepper,
-  ImageUrl:"images/" +fileName,
+  imageUrl:makeImageUrl(req, fileName),
   heat:heat,
   likes: 0,
   dislikes: 0,
