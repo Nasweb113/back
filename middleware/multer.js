@@ -8,7 +8,8 @@ const storage = multer.diskStorage({
 })
 
 function makeFileName(req, file) {
-  const fileName = `${Date.now()}-${file.originalname}`.replace(/\s/g, "-")
+  console.log("req, file:", file)
+  const fileName = `${Date.now()}-${file.originalname}`.replace(/\s/g, "-")//replacing the spaces in file name
   file.fileName = fileName
   return fileName
 }
