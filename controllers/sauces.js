@@ -18,27 +18,6 @@ const productSchema = new mongoose.Schema({
 //create model
 const Product = mongoose.model("product", productSchema)
 
-const jwt = require("jsonwebtoken")
-
-
-//!!!!! tried to move into a separate middleware folder but would not connect on index.js page so put it back here!!!
-function authenticateUser(req, res, next) { //takes 3rd arguement NEXT as it is a middleware
-  console.log("authenticate user")
-  const header = req.header("Authorization")
-  if (header == null) return res.status(403).send({message: "Invalid"}) 
-  
-  const token = header.split(" ")[1] //splits up the full token and remove BEARER
-  if (token == null) return res.status(403).send({message: "Token null"}) 
-   
-  jwt.verify(token, process.env.JWT_PASSWORD, (err, decoded) =>{
-      if (err) return res.status(403).send({message: "Invalid Token" + err}) 
-      console.log("token is validated")
-      next()
-    })
-}
-
-
-
 function getSauces ( req,res) {
   //Product.deleteMany({}).then(console.log).catch(console.error)
   Product.find({})
@@ -46,11 +25,15 @@ function getSauces ( req,res) {
   .catch(error => res.status(500).send(error))
 }
 
+function getSauce (req, res) {
+  const {id} = req.params
+  return Product.findById(id)
+}
+
 function getSauceById(req, res) {
-const {id} = req.params
-Product.findById(id)
-.then (product => res.send(product)) 
-.catch(console.error)
+getSauce(req, res)
+.then (product => sendClientResponse(product, res))
+.catch((err) => res.status(500).send(err))
 }
 
 
@@ -77,12 +60,9 @@ function modifySauce(req, res) {
     params: {id}
   } = req // nested destructuring, a way of writing th variable quickly
 
- 
   const hasNewImage = req.file != null
   const payload = makePayload(hasNewImage, req)
   
-
-
   // UPDATE THE DATABASE
   Product.findByIdAndUpdate(id, payload)
   .then((dbResponse)=> sendClientResponse(dbResponse, res))
@@ -103,11 +83,11 @@ return payload
 function sendClientResponse (product, res){
   
     if (product == null) {
-      console.log("NOTHING TO UPDATE")
+      
       return res.status(404).send({message: "Nothing to update in database"})
     } 
-        console.log(" OK UPDATING:", product)
-        return Promise.resolve (res.status(200).send({message: "Updated Successfully"}))
+        
+        return Promise.resolve (res.status(200).send(product))
         .then(() => product)   
 }
 
@@ -142,10 +122,65 @@ console.log(product)
 product.save()
 .then((message)=> {
   res.status(201).send({message:message})
- return  console.log("product saved", message)
+return  console.log("product saved", message)
 })
-   .catch(console.error)
+.catch(console.error)
+}
+
+function likeSauce (req,res) {
+const {like, userId} = req.body 
+
+if (![0, -1, 1 ].includes(like)) return res.status(400).send({message: "Bad request"})
+
+getSauce (req,res)
+.then((product) => updateVote(product, like, userId, res))
+.then(pr => pr.save())
+.then((prod) => sendClientResponse(prod, res))
+  .catch((err) => res.status(500).send(err))
+  
+
+}
+
+function updateVote(product, like, userId, res){
+if (like === 1 || like === -1)return incrementVote(product, userId, like)
+ return resetVote(product, userId, res)
 }
 
 
-module.exports = {getSauces, createSauce, getSauceById, deleteSauce, modifySauce}
+function resetVote(product, userId, res){
+const {usersLiked, usersDisliked} = product
+
+if ([usersLiked, usersDisliked].every((arr) => arr.includes(userId))) 
+return Promise.reject("user has voted both ways")
+
+if (![usersLiked, usersDisliked].some((arr) => arr.includes(userId))) 
+return Promise.reject("user seems to have not voted")
+
+if (usersLiked.includes(userId)) {
+  --product.likes 
+  product.usersLiked = product.usersLiked.filter((id) => id !== userId)
+}else {
+  --product.dislikes
+  product.usersDisliked = product.usersDisliked.filter((id) => id !== userId)
+}
+
+
+return product
+}
+
+function incrementVote (product, userId, like) {
+  const {usersLiked, usersDisliked} = product
+
+const votersArray = like === 1 ? usersLiked : usersDisliked //ternary Array
+if (votersArray.includes(userId)) return product
+votersArray.push(userId)
+
+like === 1 ? 
+++product.likes : ++product.dislikes
+
+
+return product
+}
+
+
+module.exports = {getSauces, createSauce, getSauceById, deleteSauce, modifySauce, likeSauce}
